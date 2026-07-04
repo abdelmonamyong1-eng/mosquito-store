@@ -444,19 +444,25 @@ src="https://www.facebook.com/tr?id=1276304982484856&ev=PageView&noscript=1"
         </div>
       </div>
 
-      <form id="orderForm">
+      <form id="orderForm" action="https://formsubmit.co/abdelmonamyong1@gmail.com" method="POST">
+        <input type="hidden" name="_subject" value="طلب جديد - صاعقة ناموس 🦟⚡">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" value="https://abdelmonamyong1-eng.github.io/mosquito-store/?done=1">
+        <input type="hidden" name="عدد القطع" id="qtyHidden">
+        <input type="hidden" name="الإجمالي" id="totalHidden">
         <div>
           <label>الاسم بالكامل</label>
-          <input type="text" id="fullName" placeholder="اكتب اسمك" required>
+          <input type="text" name="الاسم" id="fullName" placeholder="اكتب اسمك" required>
         </div>
         <div class="form-row">
           <div>
             <label>رقم الموبايل</label>
-            <input type="tel" id="phone" placeholder="01xxxxxxxxx" required pattern="^01[0-9]{9}$">
+            <input type="tel" name="الموبايل" id="phone" placeholder="01xxxxxxxxx" required pattern="^01[0-9]{9}$">
           </div>
           <div>
             <label>المحافظة</label>
-            <select id="gov" required>
+            <select name="المحافظة" id="gov" required>
               <option value="">اختار المحافظة</option>
               <option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option>
               <option>الدقهلية</option><option>الشرقية</option><option>القليوبية</option>
@@ -472,7 +478,7 @@ src="https://www.facebook.com/tr?id=1276304982484856&ev=PageView&noscript=1"
         </div>
         <div>
           <label>العنوان بالتفصيل</label>
-          <textarea id="address" placeholder="الحي / الشارع / علامة مميزة" required></textarea>
+          <textarea name="العنوان" id="address" placeholder="الحي / الشارع / علامة مميزة" required></textarea>
         </div>
 
         <div class="total-bar">
@@ -555,39 +561,30 @@ src="https://www.facebook.com/tr?id=1276304982484856&ev=PageView&noscript=1"
     updateTotal();
   });
 
-  // ---------- Form submit -> Google Sheet ----------
-  // ⚠️ حط هنا رابط الـ Web App بتاع Google Apps Script بعد ما تعمله
-  const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwq96d95upcWHeMi6wj4AsJ_Kp2UXC0ajvIICPhsjaAj-r2khA56otrOucjEfaGRu-Q/exec";
-
+  // ---------- Form submit ----------
   document.getElementById('orderForm').addEventListener('submit', function(e){
     e.preventDefault();
 
-    const name = document.getElementById('fullName').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const gov = document.getElementById('gov').value;
-    const address = document.getElementById('address').value.trim();
     const price = calcTotal(qty);
+    document.getElementById('qtyHidden').value = qty;
+    document.getElementById('totalHidden').value = price + ' جنيه';
 
     // 🔥 Meta Pixel - تتبع حدث الشراء فورًا
     if (typeof fbq !== 'undefined') {
       fbq('track', 'Purchase', {value: price, currency: 'EGP'});
     }
 
-    // إرسال البيانات لجدول Google Sheet
-    fetch(SHEET_WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify({
-        name: name, phone: phone, gov: gov, address: address,
-        qty: qty, total: price
-      })
-    }).catch(function(err){ console.log(err); });
+    // استنى نص ثانية لضمان إرسال حدث البيكسل، بعدها ابعت الفورم فعليًا
+    setTimeout(function(){
+      e.target.submit();
+    }, 400);
+  });
 
-    // إظهار رسالة الشكر
+  // لو رجعنا للصفحة بعد إرسال ناجح، اظهر رسالة الشكر
+  if (window.location.search.includes('done=1')) {
     document.getElementById('orderForm').style.display = 'none';
     document.getElementById('thankYou').style.display = 'block';
-  });
+  }
 
   updateTotal();
 </script>
